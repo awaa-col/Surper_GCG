@@ -45,6 +45,7 @@ from probes.extract import (
 from probes.model_config import get_hidden_size, get_num_hidden_layers
 from probes.ablate import generate_normal, generate_with_ablation
 from probes.judge import is_refusal, is_incoherent, refusal_rate, incoherent_rate
+from probes.stats import run_shield_review
 from data.datasets import load_default_datasets
 
 
@@ -103,7 +104,12 @@ def quick_test(model, tokenizer, direction_r, layers, test_prompts, n=5):
         responses.append(r)
     ref = refusal_rate(responses)
     inc = incoherent_rate(responses)
-    return ref, inc, responses
+    shield_audit = run_shield_review(
+        responses,
+        prompts,
+        source_path=f"exp01.quick.{'-'.join(str(layer) for layer in layers)}",
+    )
+    return ref, inc, responses, shield_audit
 
 
 def full_test(model, tokenizer, direction_r, layers, test_prompts):
@@ -114,7 +120,12 @@ def full_test(model, tokenizer, direction_r, layers, test_prompts):
         responses.append(r)
     ref = refusal_rate(responses)
     inc = incoherent_rate(responses)
-    return ref, inc, responses
+    shield_audit = run_shield_review(
+        responses,
+        test_prompts,
+        source_path=f"exp01.full.{'-'.join(str(layer) for layer in layers)}",
+    )
+    return ref, inc, responses, shield_audit
 
 
 def main():
@@ -146,10 +157,10 @@ def main():
 
     layer_scan = {}
     for l in range(num_layers):
-        ref, inc, _ = quick_test(model, tokenizer, direction_r, [l], harmful_test, n=args.n_test_quick)
+        ref, inc, _, shield_audit = quick_test(model, tokenizer, direction_r, [l], harmful_test, n=args.n_test_quick)
         layer_type = "GLOBAL" if l in GLOBAL_LAYERS else "local"
         print(f"  L{l:2d} ({layer_type:6s}): refusal={ref:.0%}  incoherent={inc:.0%}")
-        layer_scan[l] = {"refusal": ref, "incoherent": inc, "type": layer_type}
+        layer_scan[l] = {"refusal": ref, "incoherent": inc, "type": layer_type, "shield_audit": shield_audit}
 
     # ═══════════════════════════════════════════════════════════════════
     # Phase B：层组合扫描（完整测试）
@@ -166,17 +177,23 @@ def main():
         baseline_responses.append(r)
     baseline_ref = refusal_rate(baseline_responses)
     baseline_inc = incoherent_rate(baseline_responses)
+    baseline_shield = run_shield_review(
+        baseline_responses,
+        harmful_test,
+        source_path="exp01.baseline",
+    )
     print(f"  baseline: refusal={baseline_ref:.0%}  incoherent={baseline_inc:.0%}")
 
     combo_results = {}
     for name, layers in LAYER_COMBOS.items():
         print(f"\n  [{name}] layers={layers}")
-        ref, inc, responses = full_test(model, tokenizer, direction_r, layers, harmful_test)
+        ref, inc, responses, shield_audit = full_test(model, tokenizer, direction_r, layers, harmful_test)
         print(f"  {name}: refusal={ref:.0%}  incoherent={inc:.0%}")
         combo_results[name] = {
             "layers": layers,
             "refusal": ref,
             "incoherent": inc,
+            "shield_audit": shield_audit,
             "examples": [
                 {"prompt": harmful_test[i][:80], "response": responses[i][:200]}
                 for i in range(min(3, len(responses)))
@@ -190,7 +207,11 @@ def main():
     # 排序：优先低拒绝率、低乱码率
     ranked = sorted(
         combo_results.items(),
-        key=lambda x: (x[1]["incoherent"], x[1]["refusal"])
+        key=lambda x: (
+            -(((x[1].get("shield_audit") or {}).get("success_count") or 0)),
+            x[1]["incoherent"],
+            x[1]["refusal"],
+        )
     )
 
     print(f"\n{'='*60}")
@@ -211,7 +232,7 @@ def main():
     pair_id = 0
     for combo_name, combo_data in top3:
         # 重新跑一遍拿到完整 response
-        _, _, full_responses = full_test(model, tokenizer, direction_r, combo_data["layers"], harmful_test)
+        _, _, full_responses, _ = full_test(model, tokenizer, direction_r, combo_data["layers"], harmful_test)
         for i in range(len(harmful_test)):
             pair = {
                 "id": pair_id,
@@ -240,7 +261,7 @@ def main():
         "extract_layer": args.extract_layer,
         "extract_stability": stability,
         "layer_scan": {str(k): v for k, v in layer_scan.items()},
-        "baseline": {"refusal": baseline_ref, "incoherent": baseline_inc},
+        "baseline": {"refusal": baseline_ref, "incoherent": baseline_inc, "shield_audit": baseline_shield},
         "combo_results": combo_results,
         "ranking": [
             {"name": n, "refusal": d["refusal"], "incoherent": d["incoherent"]}

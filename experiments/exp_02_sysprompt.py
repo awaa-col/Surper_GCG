@@ -39,6 +39,7 @@ from probes.ablate import (
     weight_orthogonalize,
 )
 from probes.judge import is_refusal, is_incoherent, refusal_rate
+from probes.stats import run_shield_review
 from data.datasets import load_default_datasets
 
 
@@ -157,9 +158,15 @@ def main():
             stats[sys_name] = {}
             for scenario_name, items in scenarios.items():
                 responses = [item["response"] for item in items]
+                prompts = [item["prompt"] for item in items]
                 stats[sys_name][scenario_name] = {
                     "refusal_rate": refusal_rate(responses),
                     "incoherent_rate": sum(is_incoherent(r) for r in responses) / max(len(responses), 1),
+                    "shield_audit": run_shield_review(
+                        responses,
+                        prompts,
+                        source_path=f"exp02.{sys_name}.{scenario_name}",
+                    ),
                 }
         return stats
 
