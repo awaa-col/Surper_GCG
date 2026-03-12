@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "poc"
 version = "0.1.0"
-description = "Super GCG V2 POC — refusal & hierarchy direction extraction"
+description = "Super GCG V2 POC - refusal and hierarchy direction extraction"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -18,3 +22,10 @@ dependencies = [
 
 [tool.uv]
 dev-dependencies = []
+
+[tool.setuptools]
+py-modules = ["main", "run_pipeline"]
+
+[tool.setuptools.packages.find]
+include = ["data*", "probes*", "experiments*"]
+exclude = ["results*", "export*", "analysis*", "poc*"]
