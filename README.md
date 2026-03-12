@@ -76,7 +76,7 @@ For attack-eval runs, the same directory also contains:
 - `exp39_generations.md`
 
 For `all_experiments`, the runner preserves each script's native default output
-paths under `poc/results/` so that cross-experiment dependencies keep working.
+paths under `results/` so that cross-experiment dependencies keep working.
 
 ## Notes for larger models
 

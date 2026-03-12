@@ -15,7 +15,7 @@ drive.mount("/content/drive")
 ```bash
 %cd /content
 !git clone YOUR_REPO_URL Surper_GCG
-%cd /content/Surper_GCG/poc
+%cd /content/Surper_GCG
 !pip install -e .
 ```
 
@@ -106,7 +106,7 @@ The same run directory also contains:
 - `exp39_generations.md`
 
 For `all_experiments`, many scripts intentionally keep writing to their native
-default locations under `poc/results/`, because later experiments depend on
+default locations under `results/`, because later experiments depend on
 those default file names.
 
 ## 6. Practical Colab advice
