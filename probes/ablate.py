@@ -17,6 +17,8 @@ from typing import Dict, List, Optional
 from contextlib import contextmanager
 import copy
 
+from probes.model_structure import get_embed_tokens_module, get_transformer_layer, get_transformer_layers
+
 
 # ─── 单方向全层消融（Arditi 方法）─────────────────────────────────────────────
 
@@ -53,12 +55,12 @@ def ablation_context(model, direction: torch.Tensor, layers: Optional[List[int]]
     layers    : 消融的层列表，None = 全部层
     """
     if layers is None:
-        layers = list(range(len(model.model.layers)))
+        layers = list(range(len(get_transformer_layers(model))))
 
     hooks = []
     try:
         for l in layers:
-            target = model.model.layers[l]
+            target = get_transformer_layer(model, l)
             hook_fn = _make_ablate_hook(direction)
             handle = target.register_forward_hook(hook_fn)
             hooks.append(handle)
@@ -96,16 +98,19 @@ def weight_orthogonalize(model, direction: torch.Tensor) -> None:
 
     with torch.no_grad():
         # Embedding 层
-        if hasattr(model.model, 'embed_tokens'):
-            emb = model.model.embed_tokens.weight  # [vocab, dim]
+        try:
+            emb = get_embed_tokens_module(model).weight  # [vocab, dim]
             # embedding 输出 dim = hidden_size，direction 也是 hidden_size
             # 需要转置操作：embedding 的输出方向在 dim=1
             d_dev = d.to(emb.device, dtype=emb.dtype)
             proj = (emb * d_dev).sum(dim=1, keepdim=True)  # [vocab, 1]
-            model.model.embed_tokens.weight.copy_(emb - proj * d_dev)
+            get_embed_tokens_module(model).weight.copy_(emb - proj * d_dev)
+        except AttributeError:
+            pass
 
         # 每层的写入残差流的矩阵
-        for layer in model.model.layers:
+        layers = get_transformer_layers(model)
+        for layer in layers:
             # attention o_proj: [hidden_dim, num_heads*head_dim]
             o = layer.self_attn.o_proj.weight  # [hidden, ...]
             layer.self_attn.o_proj.weight.copy_(_ortho_matrix(o, d))
@@ -114,7 +119,7 @@ def weight_orthogonalize(model, direction: torch.Tensor) -> None:
             down = layer.mlp.down_proj.weight  # [hidden, ...]
             layer.mlp.down_proj.weight.copy_(_ortho_matrix(down, d))
 
-    print(f"[weight_ortho] Orthogonalized {len(model.model.layers)} layers + embedding")
+    print(f"[weight_ortho] Orthogonalized {len(get_transformer_layers(model))} layers + embedding")
 
 
 def undo_weight_orthogonalize(model, original_state_dict: dict) -> None:
@@ -188,11 +193,11 @@ def _make_addition_hook(direction: torch.Tensor, alpha: float):
 def addition_context(model, direction: torch.Tensor, alpha: float = 10.0,
                      layers: Optional[List[int]] = None):
     if layers is None:
-        layers = list(range(len(model.model.layers)))
+        layers = list(range(len(get_transformer_layers(model))))
     hooks = []
     try:
         for l in layers:
-            handle = model.model.layers[l].register_forward_hook(
+            handle = get_transformer_layer(model, l).register_forward_hook(
                 _make_addition_hook(direction, alpha))
             hooks.append(handle)
         yield

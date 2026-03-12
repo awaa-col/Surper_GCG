@@ -32,6 +32,7 @@ from data.topic_banks import load_topic_banks
 from probes.ablate import _make_ablate_hook
 from probes.direction_cache import extract_and_cache
 from probes.extract import _build_prompt, mean_diff_direction, remove_projection
+from probes.model_structure import get_transformer_layer
 from probes.gemma_scope import (
     build_scope_release,
     encode_scope_features,
@@ -152,13 +153,13 @@ def generate_with_hook_specs(
 ) -> str:
     text = _build_prompt(tokenizer, prompt)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
-    handles = []
-    try:
-        for layer_idx, hook_fn in hook_specs:
-            handles.append(model.model.layers[layer_idx].register_forward_hook(hook_fn))
-        with torch.no_grad():
-            out = deterministic_generate(
-                model,
+        handles = []
+        try:
+            for layer_idx, hook_fn in hook_specs:
+                handles.append(get_transformer_layer(model, layer_idx).register_forward_hook(hook_fn))
+            with torch.no_grad():
+                out = deterministic_generate(
+                    model,
                 **inputs,
                 max_new_tokens=max_new_tokens,
             )
@@ -256,7 +257,7 @@ def collect_prompt_states_with_hooks(
         handles = []
         try:
             for layer_idx, hook_fn in hook_specs:
-                handles.append(model.model.layers[layer_idx].register_forward_hook(hook_fn))
+                handles.append(get_transformer_layer(model, layer_idx).register_forward_hook(hook_fn))
 
             for layer in capture_layers:
                 def make_capture(target_layer: int):
@@ -268,7 +269,7 @@ def collect_prompt_states_with_hooks(
                     return capture_hook
 
                 handles.append(
-                    model.model.layers[layer].register_forward_hook(make_capture(layer))
+                    get_transformer_layer(model, layer).register_forward_hook(make_capture(layer))
                 )
 
             with torch.no_grad():

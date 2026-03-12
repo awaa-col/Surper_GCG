@@ -34,6 +34,7 @@ from probes.extract import (
     split_half_stability,
 )
 from probes.model_config import get_hidden_size, get_num_hidden_layers
+from probes.model_structure import get_transformer_layer
 from probes.ablate import generate_normal, generate_with_ablation, _make_ablate_hook
 from probes.extract import _build_prompt
 from probes.stats import set_seed, wilson_ci, format_ci, batch_classify, bootstrap_proportion_test
@@ -97,8 +98,8 @@ def run_dual_direction(model, tokenizer, dir_a, layer_a, dir_b, layer_b, prompts
         inputs = tokenizer(text, return_tensors="pt").to(model.device)
         hooks = []
         try:
-            h_a = model.model.layers[layer_a].register_forward_hook(_make_ablate_hook(dir_a))
-            h_b = model.model.layers[layer_b].register_forward_hook(_make_ablate_hook(dir_b))
+            h_a = get_transformer_layer(model, layer_a).register_forward_hook(_make_ablate_hook(dir_a))
+            h_b = get_transformer_layer(model, layer_b).register_forward_hook(_make_ablate_hook(dir_b))
             hooks = [h_a, h_b]
             with torch.no_grad():
                 out = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
