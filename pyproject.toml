@@ -1,0 +1,20 @@
+[project]
+name = "poc"
+version = "0.1.0"
+description = "Super GCG V2 POC — refusal & hierarchy direction extraction"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.2",
+    "transformers>=4.47",
+    "huggingface-hub>=0.24",
+    "numpy>=1.26",
+    "minisom>=2.3.2",
+    "scipy>=1.12",
+    "tqdm>=4.66",
+    "accelerate>=0.30",
+    "sae-lens>=6.37",
+]
+
+[tool.uv]
+dev-dependencies = []
