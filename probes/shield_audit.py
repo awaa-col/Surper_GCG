@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import json
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -11,6 +12,12 @@ import gc
 import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import logging as transformers_logging
+
+try:
+    from huggingface_hub.utils import disable_progress_bars
+except ImportError:  # pragma: no cover - older hub versions
+    disable_progress_bars = None
 
 
 DEFAULT_MODEL_ID = "google/shieldgemma-2b"
@@ -370,6 +377,12 @@ class ShieldGemmaAuditor:
     def load(self) -> None:
         if self.model is not None and self.tokenizer is not None:
             return
+
+        os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+        os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+        if disable_progress_bars is not None:
+            disable_progress_bars()
+        transformers_logging.set_verbosity_error()
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         dtype = torch.bfloat16 if self.device == "cuda" else torch.float32

@@ -24,11 +24,15 @@ If you need gated Hugging Face access:
 ```python
 import os
 os.environ["HF_TOKEN"] = "YOUR_TOKEN"
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 ```
 
 Optional shared mechanism knobs for larger models:
 
 ```python
+RUN_NAME = "gemma3_12b_main"
+RESUME = "--resume"  # set to "" for a fresh run
 SCOPE_TOP_K_FAMILY = 8
 MIN_GROUP_SIZE = 2
 ```
@@ -40,6 +44,8 @@ Do not jump straight to the full stack. Start with:
 ```bash
 !python run_pipeline.py \
   --preset gate_scan \
+  --run-name "$RUN_NAME" \
+  $RESUME \
   --model google/gemma-3-12b-it \
   --hf-token "$HF_TOKEN" \
   --n-train 64 \
@@ -58,6 +64,8 @@ If the gate scan looks real, run:
 ```bash
 !python run_pipeline.py \
   --preset large_model_attack \
+  --run-name "$RUN_NAME" \
+  $RESUME \
   --model google/gemma-3-12b-it \
   --hf-token "$HF_TOKEN" \
   --n-train 64 \
@@ -103,6 +111,14 @@ Outputs are written to:
 results/pipeline_runs/<timestamp>_<model_slug>_<preset>/
 ```
 
+If you pass `--run-name some_fixed_name`, outputs go to:
+
+```text
+results/pipeline_runs/some_fixed_name/
+```
+
+Then `--resume` will skip stages whose output files already exist in that run directory.
+
 The manifest file records:
 
 - model name
@@ -131,6 +147,7 @@ those default file names.
   - `--scope-top-k-family 8`
   - `--min-group-size 2`
 - If you only care about final attack feasibility, rerun just `attack_eval`.
+- For Colab restarts, keep the same `RUN_NAME` and add `--resume`.
 - Copy the entire `results/pipeline_runs/...` directory back to Drive after each major run.
 
 ## 7. Interpreting the stages

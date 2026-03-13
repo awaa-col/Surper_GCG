@@ -538,6 +538,9 @@ def main() -> int:
         env.setdefault("SUPER_GCG_SHIELD_TRUNCATE", "500")
         env.setdefault("SUPER_GCG_SHIELD_SUCCESS_KEY", "direct_danger_fewshot")
         env.setdefault("SUPER_GCG_SHIELD_SUCCESS_THRESHOLD", "0.5")
+        env.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+        env.setdefault("TRANSFORMERS_VERBOSITY", "error")
+        env.setdefault("TOKENIZERS_PARALLELISM", "false")
         completed = subprocess.run(command, cwd=ROOT, check=False, env=env)
         if completed.returncode != 0:
             print(f"[pipeline] failed: {item['script']} exit={completed.returncode}")

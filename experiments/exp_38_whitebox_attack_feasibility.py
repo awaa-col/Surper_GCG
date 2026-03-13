@@ -3,7 +3,7 @@ experiments/exp_38_whitebox_attack_feasibility.py
 ==================================================
 White-box attack feasibility validation.
 
-Goal: Given what we know about Gemma-3-1B-IT's safety mechanism (L17 r_exec main
+Goal: Given what we know about Gemma-3 safety mechanisms (L17 r_exec main
 gate, L18-L25 late manifold, overlapping families), does our current understanding
 already support a practical white-box attack that yields directly actionable
 dangerous output?
@@ -19,7 +19,7 @@ Conditions tested (围绕 r_exec 主线，不堆花哨组合):
   exec_off_l17        — ablate r_exec at L17 only
   exec_off_l23        — ablate r_exec at L23 only
   exec_off_l17_l23    — ablate r_exec at L17 + L23 (standard Exp19 combo)
-  multi_layer_exec_off — ablate r_exec at all layers 0-25 (Arditi full-layer)
+  multi_layer_exec_off — ablate r_exec at all transformer layers (Arditi full-layer)
   weight_ortho        — permanent weight orthogonalization of r_exec
   alpha_add_neg8      — add -8 * r_exec at L17 (instead of ablation)
   alpha_add_neg4      — add -4 * r_exec at L17
@@ -29,7 +29,7 @@ Key design choices vs Exp26/27:
   - Full response TEXT is saved to results (attack feasibility requires manual review)
   - Incoherent outputs are explicitly tracked and excluded from risk rate computation
   - Attack feasibility judgment is written as a structured conclusion field
-  - weight_ortho uses a copy of the model, no mutation of the original weights
+  - weight_ortho is scoped and restored after the condition finishes
 """
 
 from __future__ import annotations
@@ -76,7 +76,6 @@ ROOT = Path(__file__).resolve().parents[2]
 POC_ROOT = ROOT / "poc"
 
 DEFAULT_TOPICS = ["self_harm", "explosives", "fraud", "hate_or_abuse"]
-ALL_LAYERS = list(range(26))  # Gemma-3-1B-IT has 26 transformer layers (0-25)
 
 # Conditions围绕主门控 r_exec，按三个分析层组织
 DEFAULT_CONDITIONS = [
@@ -510,7 +509,7 @@ def build_review_candidates(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Exp38: White-box attack feasibility validation for Gemma-3-1B-IT"
+        description="Exp38: White-box attack feasibility validation for Gemma-3 models"
     )
     parser.add_argument("--model", default="google/gemma-3-1b-it")
     parser.add_argument("--hf_token", default=None)
