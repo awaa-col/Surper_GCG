@@ -1,10 +1,7 @@
 # Colab Pipeline
 
-This file now only documents the presets that are still valid entry points for
-mechanism work.
-
-If your goal is accurate `12B` mechanism discovery, do not start with attack
-evaluation or old transfer-validation stacks.
+This file documents only the entrypoints that are still allowed for mechanism
+work. Old `L17/L23`-anchored scan presets were removed and should not be run.
 
 ## 1. Environment
 
@@ -58,45 +55,12 @@ Today this preset only runs:
 That is intentional. It is the only stage that currently enters the `12B`
 mechanism-discovery mainline without carrying the old `1B` layer prior.
 
-## 3. Scan Pipeline
+## 3. What To Do Next
 
-If you need the current larger-model scan preset before the old `1B`-anchored
-scan logic is refactored, run:
+After `mechanism_discovery_foundation`, stop. Do not continue into any old scan
+wrapper that hardcodes historical layer assumptions.
 
-```bash
-!python run_pipeline.py \
-  --preset mechanism_scan_legacy \
-  --run-name "$RUN_NAME" \
-  $RESUME \
-  --model google/gemma-3-12b-it \
-  --hf-token "$HF_TOKEN" \
-  --n-train 64 \
-  --n-eval 2 \
-  --scope-top-k-family $SCOPE_TOP_K_FAMILY \
-  --min-group-size $MIN_GROUP_SIZE
-```
-
-This preset runs:
-
-- `exp_00_diagnosis.py`
-- `exp_01_refusal.py`
-- `exp_01b_cross_layer.py`
-- `exp_16_safe_response_dictionary.py`
-- `exp_17_gemma_scope_feature_probe.py`
-- `exp_19_l17_l23_late_impact.py`
-
-This is the current scan pipeline for data collection. It is still provisional:
-the logic is useful for gathering `12B` scan evidence, but it is not yet the
-final prior-free `12B` mechanism-discovery mainline.
-
-If you want maximum coverage and are willing to pay the runtime cost:
-
-```bash
-!python run_pipeline.py \
-  --preset all_experiments \
-  --model google/gemma-3-12b-it \
-  --hf-token "$HF_TOKEN"
-```
+There is no public scan wrapper right now. That is intentional.
 
 ## 4. Where Results Go
 
@@ -122,14 +86,8 @@ The manifest file records:
 - output file paths
 - extra args
 
-The same run directory also contains:
-
-- `exp38_summary.md`
-- `exp39_generations.md`
-
-For `all_experiments`, many scripts intentionally keep writing to their native
-default locations under `results/`, because later experiments depend on
-those default file names.
+The same run directory contains only the artifacts produced by the preset you
+explicitly ran.
 
 ## 5. Practical Advice
 
@@ -141,16 +99,12 @@ those default file names.
 - For larger models, do not hide the family knobs:
   - `--scope-top-k-family 8`
   - `--min-group-size 2`
-- If you only care about final attack feasibility, rerun just `attack_eval`.
 - For Colab restarts, keep the same `RUN_NAME` and add `--resume`.
 - Copy the entire `results/pipeline_runs/...` directory back to Drive after each major run.
 
 ## 6. Interpreting the Stages
 
 - `eval_calibration`: "Are our labels and review artifacts stable enough to trust later results?"
-- `mechanism_scan_legacy`: "Collect provisional larger-model scan data with the old scan logic."
-- `family_map`: "What downstream safe families depend on that gate?"
-
 For accurate `12B` mechanism work, the intended order is:
 
 1. `eval_calibration`

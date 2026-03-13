@@ -183,88 +183,8 @@ FAMILY_MAP_CORE_SPECS = [
 PIPELINE_PRESETS: dict[str, list[ExperimentSpec]] = {
     "baseline_diagnosis": [*BASELINE_DIAGNOSIS_SPECS],
     "eval_calibration": [*EVAL_CALIBRATION_SPECS],
-    "mechanism_scan_legacy": [
-        ExperimentSpec(
-            script="experiments/exp_01_refusal.py",
-            output_name="exp01_refusal.json",
-            stage="gate_scan",
-            arg_aliases={
-                "seed": "",
-                "n_train": "--n_train",
-                "n_eval": "--n_test_full",
-                "max_new_tokens": "",
-            },
-        ),
-        ExperimentSpec(
-            script="experiments/exp_01b_cross_layer.py",
-            output_name="exp01b_cross_layer.json",
-            stage="gate_scan",
-            arg_aliases={
-                "seed": "--seed",
-                "n_train": "--n_train",
-                "n_eval": "--n_dev",
-                "max_new_tokens": "",
-            },
-        ),
-        *PREP_SCOPE_SPECS,
-        ExperimentSpec(
-            script="experiments/exp_19_l17_l23_late_impact.py",
-            output_name="exp19_l17_l23_late_impact.json",
-            stage="gate_scan",
-            arg_aliases={
-                "seed": "--seed",
-                "n_train": "--n_train_exec",
-                "n_eval": "--n_per_group",
-                "max_new_tokens": "--max_new_tokens",
-                "scope_top_k_family": "--scope_top_k_family",
-                "min_group_size": "--min_group_size",
-            },
-            input_bindings={
-                "--exp17_input": "exp17_full",
-            },
-        ),
-    ],
-    "family_map": [*PREP_SCOPE_SPECS, *FAMILY_MAP_CORE_SPECS],
-    "attack_eval": [
-        ExperimentSpec(
-            script="experiments/exp_38_whitebox_attack_feasibility.py",
-            output_name="exp38_whitebox_attack_feasibility.json",
-            stage="attack_eval",
-            arg_aliases={
-                "seed": "--seed",
-                "n_train": "--n_train_exec",
-                "n_eval": "--n_eval_per_group",
-                "max_new_tokens": "--max_new_tokens",
-            },
-        ),
-        ExperimentSpec(
-            script="experiments/exp_39_context_knowledge_bypass.py",
-            output_name="exp39_context_knowledge_bypass.json",
-            stage="attack_eval",
-            arg_aliases={
-                "seed": "--seed",
-                "n_train": "--n_train_exec",
-                "n_eval": "--n_eval_per_group",
-                "max_new_tokens": "--max_new_tokens",
-            },
-        ),
-    ],
-    "analysis_attack_eval": [
-        ExperimentSpec(
-            script="analysis/format_attack_reports.py",
-            output_name="attack_analysis.done",
-            stage="analysis",
-            kind="analysis",
-        ),
-    ],
+    "mechanism_discovery_foundation": [*EVAL_CALIBRATION_SPECS],
 }
-PIPELINE_PRESETS["mechanism_discovery_foundation"] = [
-    *EVAL_CALIBRATION_SPECS,
-]
-PIPELINE_PRESETS["scan_pipeline"] = (
-    PIPELINE_PRESETS["baseline_diagnosis"]
-    + PIPELINE_PRESETS["mechanism_scan_legacy"]
-)
 
 
 def script_text(script_relpath: str) -> str:
@@ -334,10 +254,6 @@ def discover_all_experiments() -> list[ExperimentSpec]:
             )
         )
     return specs
-
-
-PIPELINE_PRESETS["all_experiments"] = discover_all_experiments()
-
 
 def parse_repeated_kv(items: list[str]) -> dict[str, str]:
     parsed: dict[str, str] = {}
@@ -455,7 +371,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run the current Super GCG experiment stack as a reproducible pipeline."
     )
-    parser.add_argument("--preset", default="large_model_attack", choices=sorted(PIPELINE_PRESETS))
+    parser.add_argument(
+        "--preset",
+        default="mechanism_discovery_foundation",
+        choices=sorted(PIPELINE_PRESETS),
+    )
     parser.add_argument("--model", default="google/gemma-3-1b-it")
     parser.add_argument("--hf-token", default=None)
     parser.add_argument("--python-bin", default=sys.executable)
