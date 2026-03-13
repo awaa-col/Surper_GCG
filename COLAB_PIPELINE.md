@@ -26,6 +26,13 @@ import os
 os.environ["HF_TOKEN"] = "YOUR_TOKEN"
 ```
 
+Optional shared mechanism knobs for larger models:
+
+```python
+SCOPE_TOP_K_FAMILY = 8
+MIN_GROUP_SIZE = 2
+```
+
 ## 2. First pass
 
 Do not jump straight to the full stack. Start with:
@@ -36,7 +43,9 @@ Do not jump straight to the full stack. Start with:
   --model google/gemma-3-12b-it \
   --hf-token "$HF_TOKEN" \
   --n-train 64 \
-  --n-eval 2
+  --n-eval 2 \
+  --scope-top-k-family $SCOPE_TOP_K_FAMILY \
+  --min-group-size $MIN_GROUP_SIZE
 ```
 
 This checks whether the larger model still has a comparable main gate and which
@@ -52,7 +61,9 @@ If the gate scan looks real, run:
   --model google/gemma-3-12b-it \
   --hf-token "$HF_TOKEN" \
   --n-train 64 \
-  --n-eval 2
+  --n-eval 2 \
+  --scope-top-k-family $SCOPE_TOP_K_FAMILY \
+  --min-group-size $MIN_GROUP_SIZE
 ```
 
 This preset runs:
@@ -116,6 +127,9 @@ those default file names.
   - `--n-train 64`
   - `--n-eval 2`
   - `--max-new-tokens 96`
+- For larger models, do not hide the family knobs:
+  - `--scope-top-k-family 8`
+  - `--min-group-size 2`
 - If you only care about final attack feasibility, rerun just `attack_eval`.
 - Copy the entire `results/pipeline_runs/...` directory back to Drive after each major run.
 

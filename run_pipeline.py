@@ -39,6 +39,8 @@ PREP_SCOPE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "",
+            "min_group_size": "--min_group_size",
         },
     ),
     ExperimentSpec(
@@ -50,6 +52,8 @@ PREP_SCOPE_SPECS = [
             "n_train": "",
             "n_eval": "",
             "max_new_tokens": "",
+            "scope_top_k_family": "",
+            "min_group_size": "--min_group_size",
         },
         input_bindings={
             "--input": "exp16_full",
@@ -68,6 +72,8 @@ FAMILY_MAP_CORE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_eval_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "--scope_top_k_family",
+            "min_group_size": "",
         },
         input_bindings={
             "--exp17_input": "exp17_full",
@@ -82,6 +88,8 @@ FAMILY_MAP_CORE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_eval_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "--scope_top_k_family",
+            "min_group_size": "",
         },
         input_bindings={
             "--exp17_input": "exp17_full",
@@ -96,6 +104,8 @@ FAMILY_MAP_CORE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_eval_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "--scope_top_k_family",
+            "min_group_size": "",
         },
         input_bindings={
             "--exp17_input": "exp17_full",
@@ -110,6 +120,8 @@ FAMILY_MAP_CORE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_eval_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "--scope_top_k_family",
+            "min_group_size": "",
         },
         input_bindings={
             "--exp17_input": "exp17_full",
@@ -124,6 +136,8 @@ FAMILY_MAP_CORE_SPECS = [
             "n_train": "--n_train_exec",
             "n_eval": "--n_eval_per_group",
             "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "--scope_top_k_family",
+            "min_group_size": "",
         },
         input_bindings={
             "--exp17_input": "exp17_full",
@@ -166,6 +180,8 @@ PIPELINE_PRESETS: dict[str, list[ExperimentSpec]] = {
                 "n_train": "--n_train_exec",
                 "n_eval": "--n_per_group",
                 "max_new_tokens": "--max_new_tokens",
+                "scope_top_k_family": "--scope_top_k_family",
+                "min_group_size": "--min_group_size",
             },
             input_bindings={
                 "--exp17_input": "exp17_full",
@@ -234,12 +250,21 @@ def has_flag(script_relpath: str, flag: str) -> bool:
 
 
 def infer_common_aliases(script_relpath: str) -> dict[str, str]:
-    aliases = {"seed": "", "n_train": "", "n_eval": "", "max_new_tokens": ""}
+    aliases = {
+        "seed": "",
+        "n_train": "",
+        "n_eval": "",
+        "max_new_tokens": "",
+        "scope_top_k_family": "",
+        "min_group_size": "",
+    }
     flag_candidates = {
         "seed": ["--seed"],
         "n_train": ["--n_train_exec", "--n_train"],
         "n_eval": ["--n_eval_per_group", "--n_per_group", "--n_dev", "--n_test_full"],
         "max_new_tokens": ["--max_new_tokens"],
+        "scope_top_k_family": ["--scope_top_k_family"],
+        "min_group_size": ["--min_group_size"],
     }
     for key, candidates in flag_candidates.items():
         for flag in candidates:
@@ -318,6 +343,8 @@ def build_command(
     n_train: int | None,
     n_eval: int | None,
     max_new_tokens: int | None,
+    scope_top_k_family: int | None,
+    min_group_size: int | None,
     extra_args: dict[str, str],
     artifact_paths: dict[str, Path],
 ) -> list[str]:
@@ -371,6 +398,8 @@ def build_command(
         "n_train": n_train,
         "n_eval": n_eval,
         "max_new_tokens": max_new_tokens,
+        "scope_top_k_family": scope_top_k_family,
+        "min_group_size": min_group_size,
     }
     for key, value in common_values.items():
         alias = alias_map.get(key, "")
@@ -404,6 +433,18 @@ def main() -> int:
     parser.add_argument("--n-train", type=int, default=None)
     parser.add_argument("--n-eval", type=int, default=None)
     parser.add_argument("--max-new-tokens", type=int, default=None)
+    parser.add_argument(
+        "--scope-top-k-family",
+        type=int,
+        default=None,
+        help="Shared family size knob passed to experiments that expose --scope_top_k_family.",
+    )
+    parser.add_argument(
+        "--min-group-size",
+        type=int,
+        default=None,
+        help="Shared group-size threshold passed to experiments that expose --min_group_size.",
+    )
     parser.add_argument(
         "--extra-arg",
         action="append",
@@ -456,6 +497,8 @@ def main() -> int:
             n_train=args.n_train,
             n_eval=args.n_eval,
             max_new_tokens=args.max_new_tokens,
+            scope_top_k_family=args.scope_top_k_family,
+            min_group_size=args.min_group_size,
             extra_args=extra_args,
             artifact_paths=artifact_paths,
         )
