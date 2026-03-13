@@ -183,7 +183,7 @@ FAMILY_MAP_CORE_SPECS = [
 PIPELINE_PRESETS: dict[str, list[ExperimentSpec]] = {
     "baseline_diagnosis": [*BASELINE_DIAGNOSIS_SPECS],
     "eval_calibration": [*EVAL_CALIBRATION_SPECS],
-    "legacy_gate_scan": [
+    "mechanism_scan_legacy": [
         ExperimentSpec(
             script="experiments/exp_01_refusal.py",
             output_name="exp01_refusal.json",
@@ -258,25 +258,12 @@ PIPELINE_PRESETS: dict[str, list[ExperimentSpec]] = {
         ),
     ],
 }
-PIPELINE_PRESETS["gate_scan"] = PIPELINE_PRESETS["legacy_gate_scan"]
 PIPELINE_PRESETS["mechanism_discovery_foundation"] = [
     *EVAL_CALIBRATION_SPECS,
 ]
-PIPELINE_PRESETS["mechanism_scan_legacy"] = (
+PIPELINE_PRESETS["scan_pipeline"] = (
     PIPELINE_PRESETS["baseline_diagnosis"]
-    + PIPELINE_PRESETS["legacy_gate_scan"]
-)
-PIPELINE_PRESETS["scan_pipeline"] = PIPELINE_PRESETS["mechanism_scan_legacy"]
-PIPELINE_PRESETS["large_model_attack"] = (
-    PIPELINE_PRESETS["gate_scan"]
-    + PIPELINE_PRESETS["attack_eval"]
-    + PIPELINE_PRESETS["analysis_attack_eval"]
-)
-PIPELINE_PRESETS["full"] = (
-    PIPELINE_PRESETS["gate_scan"]
-    + FAMILY_MAP_CORE_SPECS
-    + PIPELINE_PRESETS["attack_eval"]
-    + PIPELINE_PRESETS["analysis_attack_eval"]
+    + PIPELINE_PRESETS["mechanism_scan_legacy"]
 )
 
 

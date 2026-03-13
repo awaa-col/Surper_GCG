@@ -1,11 +1,10 @@
 # Colab Pipeline
 
-This file now distinguishes two things:
+This file now only documents the presets that are still valid entry points for
+mechanism work.
 
-- the accurate starting point for `12B` mechanism rediscovery,
-- the older `1B -> large model` transfer-validation presets kept for backward compatibility.
-
-If your goal is accurate `12B` mechanism discovery, do not start with attack evaluation.
+If your goal is accurate `12B` mechanism discovery, do not start with attack
+evaluation or old transfer-validation stacks.
 
 ## 1. Environment
 
@@ -90,43 +89,6 @@ This is the current scan pipeline for data collection. It is still provisional:
 the logic is useful for gathering `12B` scan evidence, but it is not yet the
 final prior-free `12B` mechanism-discovery mainline.
 
-## 4. Main Attack Validation
-
-Only run this after you explicitly decide to stay on the legacy transfer path:
-
-```bash
-!python run_pipeline.py \
-  --preset large_model_attack \
-  --run-name "$RUN_NAME" \
-  $RESUME \
-  --model google/gemma-3-12b-it \
-  --hf-token "$HF_TOKEN" \
-  --n-train 64 \
-  --n-eval 2 \
-  --scope-top-k-family $SCOPE_TOP_K_FAMILY \
-  --min-group-size $MIN_GROUP_SIZE
-```
-
-This preset runs:
-
-- `exp_01_refusal.py`
-- `exp_01b_cross_layer.py`
-- `exp_19_l17_l23_late_impact.py`
-- `exp_38_whitebox_attack_feasibility.py`
-- `exp_39_context_knowledge_bypass.py`
-- `analysis/format_attack_reports.py`
-
-## 5. Optional Deeper Legacy Pass
-
-If you want the family-structure and detect-side picture too:
-
-```bash
-!python run_pipeline.py \
-  --preset full \
-  --model google/gemma-3-12b-it \
-  --hf-token "$HF_TOKEN"
-```
-
 If you want maximum coverage and are willing to pay the runtime cost:
 
 ```bash
@@ -136,7 +98,7 @@ If you want maximum coverage and are willing to pay the runtime cost:
   --hf-token "$HF_TOKEN"
 ```
 
-## 6. Where Results Go
+## 4. Where Results Go
 
 Outputs are written to:
 
@@ -169,10 +131,9 @@ For `all_experiments`, many scripts intentionally keep writing to their native
 default locations under `results/`, because later experiments depend on
 those default file names.
 
-## 7. Practical Advice
+## 5. Practical Advice
 
 - Prefer `mechanism_discovery_foundation` first.
-- Treat `legacy_gate_scan` as a migration diagnostic, not as ground-truth discovery.
 - If the run OOMs, add:
   - `--n-train 64`
   - `--n-eval 2`
@@ -184,20 +145,19 @@ those default file names.
 - For Colab restarts, keep the same `RUN_NAME` and add `--resume`.
 - Copy the entire `results/pipeline_runs/...` directory back to Drive after each major run.
 
-## 8. Interpreting the Stages
+## 6. Interpreting the Stages
 
 - `eval_calibration`: "Are our labels and review artifacts stable enough to trust later results?"
-- `legacy_gate_scan`: "Does the larger model still resemble the old 1B gate story?"
+- `mechanism_scan_legacy`: "Collect provisional larger-model scan data with the old scan logic."
 - `family_map`: "What downstream safe families depend on that gate?"
-- `attack_eval`: "Does the open gate become a stable actionable attack path?"
 
 For accurate `12B` mechanism work, the intended order is:
 
 1. `eval_calibration`
 2. refactor the old gate/detect/late scripts to remove `1B` layer priors
-3. only then rerun discovery and attack acceptance
+3. only then rerun discovery and later attack acceptance if needed
 
-## 9. Transfer Caution
+## 7. Transfer Caution
 
 Your 1B findings are a strong hypothesis, not a guaranteed transplant.
 
