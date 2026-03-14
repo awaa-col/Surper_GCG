@@ -38,11 +38,11 @@ checkpoints:
 python run_pipeline.py --list-stages
 ```
 
-Run the safe starting point:
+Run the frontline starting point:
 
 ```bash
 python run_pipeline.py \
-  --preset mechanism_discovery_foundation
+  --preset baseline_diagnosis
 ```
 
 Run the current theory bootstrap:
@@ -71,7 +71,7 @@ Surper_GCG_Colab.ipynb
 - `eval_calibration`: export the review-pack artifacts for manual audit.
 - `baseline_diagnosis`: run the baseline diagnosis entrypoint.
 - `mechanism_discovery_foundation`: current minimal safe mainline; today it
-  only runs `eval_calibration`.
+  only runs `eval_calibration` as a support calibration step.
 - `theory_rebuild_bootstrap`: current safe automated bootstrap for `12B`
   bottom-theory work; runs `eval_calibration` then `baseline_diagnosis`.
 
@@ -117,8 +117,9 @@ The stage summary records:
 
 ## Notes
 
-- Start with `mechanism_discovery_foundation` if you only want the current
-  minimal safe entrypoint.
+- Start with `baseline_diagnosis` for the first real `12B` mainline run.
+- Use `mechanism_discovery_foundation` only if you explicitly want the legacy
+  review-pack calibration step.
 - Use `theory_rebuild_bootstrap` when you want the current automated `12B`
   bottom-theory bootstrap.
 - Do not run old `L17/L23`-anchored scan wrappers as if they were valid `12B`

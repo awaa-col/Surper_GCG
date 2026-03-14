@@ -207,7 +207,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--preset",
-        default="mechanism_discovery_foundation",
+        default="baseline_diagnosis",
         choices=sorted(PIPELINE_PRESETS),
     )
     parser.add_argument(

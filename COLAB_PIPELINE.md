@@ -18,7 +18,7 @@ drive.mount("/content/drive")
 
 ```bash
 %cd /content
-!git clone YOUR_REPO_URL Surper_GCG
+!git clone https://github.com/awaa-col/Surper_GCG_ResearchWorkFlow.git Surper_GCG
 %cd /content/Surper_GCG
 !pip install -e .
 ```
@@ -39,23 +39,23 @@ RUN_NAME = "gemma3_12b_bootstrap"
 RESUME = "--resume"  # set to "" for a fresh run
 ```
 
-## 2. Safe Starting Point
+## 2. Frontline Starting Point
 
-If you only want the minimal safe entrypoint, run:
+If you want the first real `12B` frontline tech point, run:
 
 ```bash
 !python run_pipeline.py \
-  --preset mechanism_discovery_foundation \
+  --preset baseline_diagnosis \
   --run-name "$RUN_NAME" \
   $RESUME
 ```
 
-Today this preset only runs:
+Today this preset runs:
 
-- `exp_11_review_pack.py`
+- `exp_00_diagnosis.py`
 
-That is intentional. It is the smallest stage that enters the `12B` mainline
-without carrying the historical `1B` layer story.
+This is the correct mainline entry if your goal is to start `12B` from scratch
+instead of reusing legacy review artifacts.
 
 ## 3. Current Theory Bootstrap
 
@@ -70,10 +70,24 @@ If you want the current automated bootstrap for `12B` bottom-theory work, run:
 
 Today this preset runs:
 
-1. `eval_calibration`
-2. `baseline_diagnosis`
+1. `eval_calibration` (legacy review-pack calibration)
+2. `baseline_diagnosis` (real frontline start)
 
 That is the current safe limit for automated `12B` discovery.
+
+## 3B. Optional Side Quest: Legacy Review-Pack Calibration
+
+If you intentionally want to build a manual review pack from legacy saved
+results, run:
+
+```bash
+!python run_pipeline.py \
+  --preset eval_calibration \
+  --run-name "${RUN_NAME}_eval_calibration" \
+  $RESUME
+```
+
+This is a support tech, not the first real `12B` battle.
 
 ## 4. Human Review Policy
 
@@ -139,9 +153,10 @@ The stage summary is the quickest way to see:
 
 ## 7. Practical Advice
 
-- Prefer `mechanism_discovery_foundation` for the minimal safe start.
-- Prefer `theory_rebuild_bootstrap` when you are actively rebuilding `12B`
-  bottom theory.
+- Prefer `baseline_diagnosis` as the first real mainline run.
+- Use `eval_calibration` only when you intentionally need a legacy review pack.
+- Use `theory_rebuild_bootstrap` when you want both support calibration and the
+  real frontline baseline stage in one run.
 - If the run OOMs, add:
   - `--n-train 64`
   - `--n-eval 2`
