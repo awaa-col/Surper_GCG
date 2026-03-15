@@ -99,8 +99,10 @@ The pipeline now tracks the intended `12B` mechanism-rebuild order explicitly:
 9. `robustness`
 10. `attack_acceptance`
 
-Only the first two stages are currently runnable. The later stages remain
-blocked until their old `1B` priors are removed from the underlying scripts.
+The first three stages are currently wired through the pipeline entrypoint:
+`eval_calibration`, `baseline_diagnosis`, and `gate_discovery`. The later
+stages remain blocked until their old `1B` priors are removed from the
+underlying scripts.
 
 ## Outputs
 

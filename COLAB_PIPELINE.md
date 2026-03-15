@@ -141,8 +141,8 @@ The intended `12B` stage order is:
 9. `robustness`
 10. `attack_acceptance`
 
-Only stages `0-1` are wired for direct execution right now. The rest remain
-blocked until the old scripts are refactored to remove `1B` priors.
+Stages `0-2` are currently wired for direct execution. The rest remain blocked
+until the old scripts are refactored to remove `1B` priors.
 
 ## 6. Where Results Go
 
@@ -183,6 +183,31 @@ The stage summary is the quickest way to see:
 - Keep the same `RUN_NAME` and add `--resume` after Colab restarts.
 - Copy the whole `results/pipeline_runs/...` directory back to Drive after each
   major run.
+
+## 7B. Resume The Legacy 1B Exp01 Scan
+
+If you need to continue the historical `1B` experiment-one scan after a Colab
+runtime reset, use the experiment-level checkpoint instead of rerunning from
+zero:
+
+```bash
+!python experiments/exp_01_refusal.py \
+  --model google/gemma-3-1b-it \
+  --output results/exp01_scan.json \
+  --output_blind results/exp01_scan_blind.json \
+  --checkpoint results/exp01_scan_checkpoint.json \
+  --resume
+```
+
+Notes:
+
+- The checkpoint now saves progress after direction extraction, each per-layer
+  scan item, baseline generation, each combo run, and blind-review payload
+  assembly.
+- Keep `results/exp01_scan_checkpoint.json` and
+  `results/exp01_scan_checkpoint.direction.pt` together.
+- If you change `--model`, `--extract_layer`, `--n_train`, `--n_test_quick`, or
+  `--n_test_full`, do not reuse the old checkpoint.
 
 ## 8. Transfer Caution
 
