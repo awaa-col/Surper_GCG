@@ -99,6 +99,23 @@ BASELINE_DIAGNOSIS_SPECS = [
 ]
 
 
+GATE_DISCOVERY_SPECS = [
+    ExperimentSpec(
+        script="experiments/exp_40_gate_discovery.py",
+        output_name="exp40_gate_discovery.json",
+        stage="gate_discovery",
+        arg_aliases={
+            "seed": "--seed",
+            "n_train": "--n_train",
+            "n_eval": "--n_eval",
+            "max_new_tokens": "--max_new_tokens",
+            "scope_top_k_family": "",
+            "min_group_size": "",
+        },
+    ),
+]
+
+
 FAMILY_MAP_CORE_SPECS = [
     ExperimentSpec(
         script="experiments/exp_27_vector_effect_atlas.py",
@@ -259,11 +276,9 @@ PIPELINE_STAGES: dict[str, StageSpec] = {
             "Reject candidates that only increase nonsense or repetition.",
         ),
         reference_1b_experiments=("Exp01", "Exp01-scan"),
-        runnable_now=False,
-        blocked_reason=(
-            "The historical scan logic still bakes in 1B layer priors and needs a "
-            "12B-first refactor."
-        ),
+        runnable_now=True,
+        blocked_reason="",
+        experiment_specs=tuple(GATE_DISCOVERY_SPECS),
     ),
     "cross_layer_refinement": StageSpec(
         key="cross_layer_refinement",
@@ -425,6 +440,7 @@ PIPELINE_STAGES: dict[str, StageSpec] = {
 PIPELINE_PRESETS: dict[str, tuple[str, ...]] = {
     "eval_calibration": ("eval_calibration",),
     "baseline_diagnosis": ("baseline_diagnosis",),
+    "gate_discovery_bootstrap": ("baseline_diagnosis", "gate_discovery"),
     "mechanism_discovery_foundation": ("eval_calibration",),
     "theory_rebuild_bootstrap": ("eval_calibration", "baseline_diagnosis"),
 }

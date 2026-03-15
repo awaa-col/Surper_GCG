@@ -52,6 +52,13 @@ python run_pipeline.py \
   --preset theory_rebuild_bootstrap
 ```
 
+Run the next unlocked tech point after baseline:
+
+```bash
+python run_pipeline.py \
+  --preset gate_discovery_bootstrap
+```
+
 Dry-run without executing:
 
 ```bash
@@ -70,6 +77,8 @@ Surper_GCG_Colab.ipynb
 
 - `eval_calibration`: export the review-pack artifacts for manual audit.
 - `baseline_diagnosis`: run the baseline diagnosis entrypoint.
+- `gate_discovery_bootstrap`: run the baseline diagnosis step, then the new
+  12B-first gate discovery bootstrap scan.
 - `mechanism_discovery_foundation`: current minimal safe mainline; today it
   only runs `eval_calibration` as a support calibration step.
 - `theory_rebuild_bootstrap`: current safe automated bootstrap for `12B`

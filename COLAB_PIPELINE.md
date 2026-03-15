@@ -75,6 +75,25 @@ Today this preset runs:
 
 That is the current safe limit for automated `12B` discovery.
 
+## 3C. Next Unlocked Tech Point: Gate Discovery Bootstrap
+
+After `baseline_diagnosis` is complete, the next unlocked mainline step is:
+
+```bash
+!python run_pipeline.py \
+  --preset gate_discovery_bootstrap \
+  --run-name "${RUN_NAME}_gate" \
+  $RESUME
+```
+
+This preset runs:
+
+1. `baseline_diagnosis`
+2. `gate_discovery`
+
+It does not unlock `cross_layer_refinement`, `detect_discovery`, or later
+stages yet.
+
 ## 3B. Optional Side Quest: Legacy Review-Pack Calibration
 
 If you intentionally want to build a manual review pack from legacy saved
