@@ -35,11 +35,12 @@ os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 Optional shared knobs:
 
 ```python
-RUN_NAME = "gemma3_12b_bootstrap"
+RUN_NAME = "gemma3_12b_main"
+DRIVE_RUN_DIR = f"/content/drive/MyDrive/{RUN_NAME}"
 RESUME = "--resume"  # set to "" for a fresh run
 ```
 
-## 2. Frontline Starting Point
+## Stage 1: Baseline Diagnosis
 
 If you want the first real `12B` frontline tech point, run:
 
@@ -57,7 +58,7 @@ Today this preset runs:
 This is the correct mainline entry if your goal is to start `12B` from scratch
 instead of reusing legacy review artifacts.
 
-## 3. Current Theory Bootstrap
+## Stage Bundle: Current Theory Bootstrap
 
 If you want the current automated bootstrap for `12B` bottom-theory work, run:
 
@@ -75,14 +76,14 @@ Today this preset runs:
 
 That is the current safe limit for automated `12B` discovery.
 
-## 3C. Next Unlocked Tech Point: Gate Discovery Bootstrap
+## Stage 2: Gate Discovery
 
 After `baseline_diagnosis` is complete, the next unlocked mainline step is:
 
 ```bash
 !python run_pipeline.py \
   --preset gate_discovery_bootstrap \
-  --run-name "${RUN_NAME}_gate" \
+  --run-name "$RUN_NAME" \
   $RESUME
 ```
 
@@ -94,7 +95,26 @@ This preset runs:
 It does not unlock `cross_layer_refinement`, `detect_discovery`, or later
 stages yet.
 
-## 3B. Optional Side Quest: Legacy Review-Pack Calibration
+If `Stage 1` already finished before a Colab reset and you still have the saved
+run directory in Google Drive, restore that run directory back into:
+
+```text
+/content/Surper_GCG/results/pipeline_runs/gemma3_12b_main/
+```
+
+Make sure `exp00_diagnosis.json` is present, then rerun `Stage 2` with:
+
+```bash
+!python run_pipeline.py \
+  --preset gate_discovery_bootstrap \
+  --run-name "gemma3_12b_main" \
+  --resume
+```
+
+The pipeline will skip the existing baseline artifact and continue with
+`gate_discovery`.
+
+## Support Tech: Eval Calibration
 
 If you intentionally want to build a manual review pack from legacy saved
 results, run:
