@@ -108,6 +108,7 @@ Each run directory contains:
 - Start with `t0_t1_bootstrap` for the first clean `12B` mainline run.
 - Use `t0_eval_only` only when you intentionally want the review-pack calibration step.
 - Use `t0_t2_bootstrap` when you want the current full runnable chain.
+- Treat `T2 gate_discovery` as a provisional manual-review shortlist, not a final gate claim.
 - Do not run old `L17/L23`-anchored scan wrappers as if they were valid `12B` discovery stages.
 - The pipeline is intentionally hybrid: it automates generation, ShieldGemma audit, ranking, and artifact export, but several stages still require human review before advancing.
 - If Colab VRAM is tight, reduce `--n-train`, `--n-eval`, and `--max-new-tokens`.

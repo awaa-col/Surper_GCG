@@ -121,6 +121,7 @@ PIPELINE_STAGES: dict[str, StageSpec] = {
         human_review_points=(
             "Review top candidate and destructive layers by hand.",
             "Reject layers that only increase incoherence or repetition.",
+            "Do not promote any layer to a main gate from Exp40 alone; treat T2 output as a provisional shortlist only.",
         ),
         experiment_ids=("Exp01", "Exp01-scan", "Exp40"),
         depends_on=("t1_baseline_diagnosis",),
